@@ -11,25 +11,19 @@ declare var window: any;
 declare var process: any;
 
 // =================================================================================
-// IMPORTANT: FIREBASE CONFIGURATION
+// FIREBASE CONFIGURATION
 // =================================================================================
-// The FirebaseError (auth/invalid-api-key) occurs because the environment 
-// variables are not set in this development environment. 
-//
-// I have replaced them with placeholder values to allow the application to run
-// without crashing. 
-//
-// YOU MUST REPLACE these placeholders with your actual Firebase project 
-// configuration. For your Cloudflare deployment, you should continue to use 
-// environment variables as previously discussed.
+// This configuration now reads from environment variables.
+// Ensure you have set these variables in your Cloudflare deployment settings.
+// Example: VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, etc.
 // =================================================================================
 const firebaseConfig = {
-  apiKey: "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", // REPLACE WITH YOUR FIREBASE API KEY
-  authDomain: "your-project-id.firebaseapp.com",      // REPLACE WITH YOUR FIREBASE AUTH DOMAIN
-  projectId: "your-project-id",                       // REPLACE WITH YOUR FIREBASE PROJECT ID
-  storageBucket: "your-project-id.appspot.com",       // REPLACE WITH YOUR FIREBASE STORAGE BUCKET
-  messagingSenderId: "123456789012",                  // REPLACE WITH YOUR MESSAGING SENDER ID
-  appId: "1:123456789012:web:abcdef1234567890abcdef" // REPLACE WITH YOUR APP ID
+  apiKey: process.env.VITE_FIREBASE_API_KEY,
+  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.VITE_FIREBASE_APP_ID
 };
 
 
