@@ -1,16 +1,26 @@
 
 import React, { useState, useEffect } from 'react';
 import { generateVideo } from '../services/geminiService';
-import { AspectRatio, HistoryItem, VideoLength, VideoGenerationState } from '../types';
+import { AspectRatio, HistoryItem, VideoLength, VideoGenerationState, UserData } from '../types';
 import Header from './Header';
 import HistoryPanel from './HistoryPanel';
 import LoadingOverlay from './LoadingOverlay';
+import UpgradeModal from './UpgradeModal';
 
-const MainLayout: React.FC<{ onLogout: () => void; onApiKeyInvalid: () => void; }> = ({ onLogout, onApiKeyInvalid }) => {
+interface MainLayoutProps {
+  onLogout: () => void;
+  onApiKeyInvalid: () => void;
+  userData: UserData;
+  onSuccessfulGeneration: () => void;
+  onUpgrade: () => void;
+}
+
+const MainLayout: React.FC<MainLayoutProps> = ({ onLogout, onApiKeyInvalid, userData, onSuccessfulGeneration, onUpgrade }) => {
   const [prompt, setPrompt] = useState<string>('');
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>(AspectRatio.LANDSCAPE);
   const [videoLength, setVideoLength] = useState<VideoLength>(VideoLength.SHORT);
   const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [isUpgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const [generationState, setGenerationState] = useState<VideoGenerationState>({
     status: 'idle',
     message: '',
@@ -31,6 +41,11 @@ const MainLayout: React.FC<{ onLogout: () => void; onApiKeyInvalid: () => void; 
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
+
+    if (userData.plan === 'free' && userData.generationsLeft <= 0) {
+      setUpgradeModalOpen(true);
+      return;
+    }
     
     setGenerationState({
       status: 'generating',
@@ -54,6 +69,8 @@ const MainLayout: React.FC<{ onLogout: () => void; onApiKeyInvalid: () => void; 
       const updatedHistory = [...history, newItem];
       setHistory(updatedHistory);
       localStorage.setItem('genluxAiHistory', JSON.stringify(updatedHistory));
+      
+      onSuccessfulGeneration();
 
       setGenerationState({ status: 'success', message: 'Video generated!', videoUrl: url, error: null });
     } catch (err) {
@@ -74,10 +91,15 @@ const MainLayout: React.FC<{ onLogout: () => void; onApiKeyInvalid: () => void; 
   };
   
   const isLoading = generationState.status !== 'idle' && generationState.status !== 'success' && generationState.status !== 'error';
+  
+  const handleConfirmUpgrade = () => {
+    onUpgrade();
+    setUpgradeModalOpen(false);
+  };
 
   return (
     <div className="flex flex-col md:flex-row h-screen bg-gray-900 text-white pt-20 md:pt-0">
-      <Header onLogout={onLogout} />
+      <Header onLogout={onLogout} userData={userData} onUpgrade={() => setUpgradeModalOpen(true)} />
       <main className="flex-grow p-4 md:p-8 flex flex-col items-center justify-center">
         <div className="w-full max-w-4xl flex flex-col h-full">
             {/* Video Player Area */}
@@ -147,6 +169,11 @@ const MainLayout: React.FC<{ onLogout: () => void; onApiKeyInvalid: () => void; 
         </div>
       </main>
       <HistoryPanel history={history} onSelect={selectHistoryItem} />
+      <UpgradeModal
+        isOpen={isUpgradeModalOpen}
+        onClose={() => setUpgradeModalOpen(false)}
+        onConfirm={handleConfirmUpgrade}
+      />
     </div>
   );
 };

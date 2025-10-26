@@ -25,3 +25,8 @@ export type VideoGenerationState = {
   videoUrl: string | null;
   error: string | null;
 };
+
+export interface UserData {
+  plan: 'free' | 'pro';
+  generationsLeft: number;
+}

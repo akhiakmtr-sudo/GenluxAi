@@ -1,14 +1,12 @@
 
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, GenerateVideosOperation } from "@google/genai";
 import { AspectRatio, VideoLength } from '../types';
 
-// This is a placeholder for the actual type from the SDK, which may not be exported.
-// Using 'any' allows us to handle the operation object without strict typing issues.
-type VideoOperation = any;
-
-const pollOperation = async <T,>(operation: T, ai: GoogleGenAI): Promise<T> => {
+// FIX: Replaced generic type with specific GenerateVideosOperation type to fix TS errors.
+const pollOperation = async (operation: GenerateVideosOperation, ai: GoogleGenAI): Promise<GenerateVideosOperation> => {
   let currentOperation = operation;
-  while ((currentOperation as any).done === false) {
+  // FIX: Removed 'as any' cast as 'done' property exists on GenerateVideosOperation type.
+  while (currentOperation.done === false) {
     await new Promise(resolve => setTimeout(resolve, 10000));
     currentOperation = await ai.operations.getVideosOperation({ operation: currentOperation });
   }
@@ -32,7 +30,8 @@ export const generateVideo = async (
   try {
     // Initial Generation
     onProgress("Starting video generation...");
-    let operation: VideoOperation = await ai.models.generateVideos({
+    // FIX: Used GenerateVideosOperation type for type safety.
+    let operation: GenerateVideosOperation = await ai.models.generateVideos({
       model: 'veo-3.1-fast-generate-preview',
       prompt,
       config: {
@@ -53,8 +52,10 @@ export const generateVideo = async (
     
     for (let i = 0; i < extensionsNeeded; i++) {
         onProgress(`Extending video... (${i + 1}/${extensionsNeeded})`);
-        let extensionOperation: VideoOperation = await ai.models.generateVideos({
-            model: 'veo-3.1-fast-generate-preview',
+        // FIX: Used GenerateVideosOperation type for type safety.
+        let extensionOperation: GenerateVideosOperation = await ai.models.generateVideos({
+            // FIX: Use 'veo-3.1-generate-preview' model for video extension as per documentation.
+            model: 'veo-3.1-generate-preview',
             prompt: 'continue the scene, make it more dynamic',
             video: baseVideo,
             config: {
