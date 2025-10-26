@@ -129,21 +129,10 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ auth, googleProvider }) => {
 
     return (
       <>
-        <div className="flex border-b border-gray-700">
-          <button 
-            onClick={() => switchMode('login')} 
-            className={`flex-1 py-3 text-sm font-semibold transition-colors ${mode === 'login' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-gray-400 hover:text-white'}`}
-          >
-            SIGN IN
-          </button>
-          <button 
-            onClick={() => switchMode('signup')} 
-            className={`flex-1 py-3 text-sm font-semibold transition-colors ${mode === 'signup' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-gray-400 hover:text-white'}`}
-          >
-            SIGN UP
-          </button>
-        </div>
-
+        <h2 className="text-2xl font-bold text-center text-white mb-2">
+            {mode === 'login' ? 'Welcome Back!' : 'Create an Account'}
+        </h2>
+        
         <form className="mt-6 space-y-6" onSubmit={handleEmailPasswordAuth}>
           <div className="rounded-md shadow-sm space-y-4">
             <div>
@@ -202,7 +191,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ auth, googleProvider }) => {
                 <div className="w-full border-t border-gray-600"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-gray-800 text-gray-500">Or</span>
+                <span className="px-2 bg-gray-800 text-gray-500">Or continue with</span>
             </div>
         </div>
         <div>
@@ -214,6 +203,24 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ auth, googleProvider }) => {
                 <i className="fab fa-google text-lg mr-3"></i>
                 Sign in with Google
             </button>
+        </div>
+        
+        <div className="text-sm text-center mt-6 text-gray-400">
+            {mode === 'login' ? (
+                <>
+                    Don't have an account?{' '}
+                    <button onClick={() => switchMode('signup')} className="font-medium text-purple-400 hover:text-purple-300">
+                        Sign up
+                    </button>
+                </>
+            ) : (
+                <>
+                    Already have an account?{' '}
+                    <button onClick={() => switchMode('login')} className="font-medium text-purple-400 hover:text-purple-300">
+                        Sign in
+                    </button>
+                </>
+            )}
         </div>
       </>
     );
