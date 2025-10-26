@@ -4,6 +4,7 @@ import { getAuth, GoogleAuthProvider, signOut, onAuthStateChanged, Auth } from '
 import LoginScreen from './components/LoginScreen';
 import ApiKeySelector from './components/ApiKeySelector';
 import MainLayout from './components/MainLayout';
+import FirebaseConfigError from './components/FirebaseConfigError';
 
 // @ts-ignore
 declare var window: any;
@@ -26,11 +27,21 @@ const firebaseConfig = {
   appId: process.env.VITE_FIREBASE_APP_ID
 };
 
+// Check if Firebase config is valid and initialize
+const isFirebaseConfigured = !!(firebaseConfig.apiKey && firebaseConfig.authDomain && firebaseConfig.projectId);
+let auth: Auth | null = null;
+let googleProvider: GoogleAuthProvider | null = null;
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth: Auth = getAuth(app);
-const googleProvider: GoogleAuthProvider = new GoogleAuthProvider();
+if (isFirebaseConfigured) {
+  try {
+    const app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    googleProvider = new GoogleAuthProvider();
+  } catch (error) {
+    console.error("Firebase initialization failed:", error);
+    // If initialization fails, we'll treat it as not configured.
+  }
+}
 
 
 enum AppState {
@@ -60,6 +71,11 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (!isFirebaseConfigured || !auth) {
+      // Don't set up auth listener if Firebase is not configured
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         // User is signed in, check for API key.
@@ -74,8 +90,13 @@ const App: React.FC = () => {
     return () => unsubscribe();
   }, [checkApiKey]);
 
+  // Render error screen if Firebase is not configured or failed to initialize
+  if (!isFirebaseConfigured || !auth || !googleProvider) {
+    return <FirebaseConfigError />;
+  }
+
   const handleLogout = () => {
-    signOut(auth).catch(error => console.error("Logout failed:", error));
+    signOut(auth!).catch(error => console.error("Logout failed:", error));
   };
   
   const handleKeySelected = () => {
@@ -97,13 +118,13 @@ const App: React.FC = () => {
           </div>
         );
       case AppState.LOGGED_OUT:
-        return <LoginScreen auth={auth} googleProvider={googleProvider} />;
+        return <LoginScreen auth={auth!} googleProvider={googleProvider!} />;
       case AppState.NEEDS_API_KEY:
         return <ApiKeySelector onKeySelected={handleKeySelected} />;
       case AppState.READY:
         return <MainLayout onLogout={handleLogout} onApiKeyInvalid={handleApiKeyInvalid} />;
       default:
-        return <LoginScreen auth={auth} googleProvider={googleProvider} />;
+        return <LoginScreen auth={auth!} googleProvider={googleProvider!} />;
     }
   };
 
