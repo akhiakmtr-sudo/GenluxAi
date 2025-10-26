@@ -1,28 +1,42 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signOut, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signOut, onAuthStateChanged, Auth } from 'firebase/auth';
 import LoginScreen from './components/LoginScreen';
 import ApiKeySelector from './components/ApiKeySelector';
 import MainLayout from './components/MainLayout';
 
 // @ts-ignore
 declare var window: any;
+// @ts-ignore
+declare var process: any;
 
-// NOTE: These are placeholder values. A real app would get these from a secure source.
+// =================================================================================
+// IMPORTANT: FIREBASE CONFIGURATION
+// =================================================================================
+// The FirebaseError (auth/invalid-api-key) occurs because the environment 
+// variables are not set in this development environment. 
+//
+// I have replaced them with placeholder values to allow the application to run
+// without crashing. 
+//
+// YOU MUST REPLACE these placeholders with your actual Firebase project 
+// configuration. For your Cloudflare deployment, you should continue to use 
+// environment variables as previously discussed.
+// =================================================================================
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY_PLACEHOLDER",
-  authDomain: "your-project-id.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project-id.appspot.com",
-  messagingSenderId: "123456789012",
-  appId: "1:123456789012:web:your-app-id"
+  apiKey: "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", // REPLACE WITH YOUR FIREBASE API KEY
+  authDomain: "your-project-id.firebaseapp.com",      // REPLACE WITH YOUR FIREBASE AUTH DOMAIN
+  projectId: "your-project-id",                       // REPLACE WITH YOUR FIREBASE PROJECT ID
+  storageBucket: "your-project-id.appspot.com",       // REPLACE WITH YOUR FIREBASE STORAGE BUCKET
+  messagingSenderId: "123456789012",                  // REPLACE WITH YOUR MESSAGING SENDER ID
+  appId: "1:123456789012:web:abcdef1234567890abcdef" // REPLACE WITH YOUR APP ID
 };
+
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const googleProvider = new GoogleAuthProvider();
+const auth: Auth = getAuth(app);
+const googleProvider: GoogleAuthProvider = new GoogleAuthProvider();
 
 
 enum AppState {
@@ -37,6 +51,7 @@ const App: React.FC = () => {
 
   const checkApiKey = useCallback(async () => {
     try {
+      // @ts-ignore
       if (window.aistudio && await window.aistudio.hasSelectedApiKey()) {
         setAppState(AppState.READY);
       } else {
@@ -44,6 +59,8 @@ const App: React.FC = () => {
       }
     } catch (e) {
       console.error("aistudio not available, assuming API key is needed for Veo.", e);
+      // In a real scenario outside this specific environment, you might default to READY
+      // or have another way of providing the key. For this app, it's mandatory.
       setAppState(AppState.NEEDS_API_KEY);
     }
   }, []);
@@ -68,7 +85,8 @@ const App: React.FC = () => {
   };
   
   const handleKeySelected = () => {
-    setAppState(AppState.READY);
+    // A slight delay can help ensure the key is available immediately after selection
+    setTimeout(() => setAppState(AppState.READY), 100);
   };
 
   const handleApiKeyInvalid = () => {
