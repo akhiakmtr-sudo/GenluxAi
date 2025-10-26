@@ -1,0 +1,5 @@
+{
+  "name": "Genlux Ai",
+  "description": "An AI-powered video generation application that uses Google's Veo model to create stunning videos from text prompts. Users can select aspect ratios and video lengths, and view their generation history.",
+  "requestFramePermissions": []
+}
